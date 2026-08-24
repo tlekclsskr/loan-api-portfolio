@@ -20,7 +20,7 @@ jobs:
         run: pip install pytest moto boto3
 
       - name: Run unit tests
-        wokring-directory: src
+        working-directory: src
         run: pytest -v
 
       - name: Configure AWS credentials
