@@ -10,7 +10,15 @@ Resources:
       PrimaryKey:
         Name: id
         Type: String
-    
+
+  DocumentsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+
   LoanApiFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -22,9 +30,12 @@ Resources:
       Environment:
         Variables:
           TABLE_NAME: !Ref LoansTable
+          BUCKET_NAME: !Ref DocumentsBucket
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref LoansTable
+        - S3CrudPolicy:
+            BucketName: !Ref DocumentsBucket
       Events:
         ListCreate:
           Type: HttpApi
@@ -36,8 +47,16 @@ Resources:
           Properties:
             Path: /loans/{id}
             Method: ANY
+        Document:
+          Type: HttpApi
+          Properties:
+            Path: /loans/{id}/document
+            Method: POST
 
 Outputs:
   ApiUrl:
     Description: API Gateway endpoint URL
     Value: !Sub "https://${ServerlessHttpApi}.execute-api.${AWS::Region}.amazonaws.com/"
+  BucketName:
+    Description: S3 Bucket for loan documents
+    Value: !Ref DocumentsBucket
